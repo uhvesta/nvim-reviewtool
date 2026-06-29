@@ -36,8 +36,8 @@ function M.dump(session, opts)
       table.insert(lines, "")
     end
     local range = comment.start_line == comment.end_line
-        and ("L" .. comment.start_line)
-        or ("L" .. comment.start_line .. "-L" .. comment.end_line)
+        and ("Line " .. comment.start_line)
+        or ("Lines " .. comment.start_line .. "-" .. comment.end_line)
     table.insert(lines, "### " .. range)
     table.insert(lines, "")
     local code = snippet(comment)

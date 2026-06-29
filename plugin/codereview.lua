@@ -15,6 +15,7 @@ local subcommands = {
   prev = function() api().prev_file() end,
   comment = function() api().add_comment() end,
   comments = function() api().comments() end,
+  anchor = function() api().anchor_comment() end,
   reviewed = function() api().mark_reviewed() end,
   dump = function(args)
     api().dump({ no_snippets = vim.tbl_contains(args.fargs, "--no-snippets") })

@@ -31,7 +31,6 @@ local function reopen_current()
   comments.update_positions()
   close_view()
   queries.update_session(M.state.session.id, { current_file_index = M.state.current_index })
-  layout.refresh_sidebar(M.state, M.open_file, M.close)
   diffview.open(M.state.session, active_file())
   comments.render_file_comments()
 end
@@ -69,7 +68,7 @@ function M.create(spec)
       table.insert(files, saved)
     end
     M.state = { session = session, files = files, current_index = 1 }
-    layout.open(M.state, M.open_file, M.close)
+    layout.open(M.state)
   end)
 end
 
@@ -86,7 +85,7 @@ function M.resume(id)
       files = queries.get_files(session.id),
       current_index = tonumber(session.current_file_index) or 1,
     }
-    layout.open(M.state, M.open_file, M.close)
+    layout.open(M.state)
     return
   end
   local sessions = queries.list_sessions({ status = "active" })
@@ -126,7 +125,7 @@ function M.mark_reviewed()
   local reviewed = tonumber(file.reviewed) ~= 1
   queries.mark_file_reviewed(file.id, reviewed)
   file.reviewed = reviewed and 1 or 0
-  layout.refresh_sidebar(M.state, M.open_file, M.close)
+  vim.notify((reviewed and "Marked reviewed: " or "Marked unreviewed: ") .. file.path)
 end
 
 function M.current()

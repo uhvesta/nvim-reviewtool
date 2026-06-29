@@ -40,8 +40,13 @@ function M.open(on_submit)
   end
 
   vim.keymap.set("n", "<CR>", submit, { buffer = buf, nowait = true })
+  vim.keymap.set("n", "<C-s>", submit, { buffer = buf, nowait = true })
+  vim.keymap.set("i", "<C-s>", submit, { buffer = buf, nowait = true })
+  vim.keymap.set("i", "<C-CR>", submit, { buffer = buf, nowait = true })
+  vim.keymap.set("n", "ZZ", submit, { buffer = buf, nowait = true })
   vim.keymap.set("n", "q", cancel, { buffer = buf, nowait = true })
-  vim.keymap.set("n", "<Esc>", cancel, { buffer = buf, nowait = true })
+  vim.keymap.set("n", "<C-c>", cancel, { buffer = buf, nowait = true })
+  vim.keymap.set("i", "<C-c>", cancel, { buffer = buf, nowait = true })
   vim.api.nvim_create_autocmd("BufWriteCmd", { buffer = buf, callback = submit })
   vim.cmd.startinsert()
 end

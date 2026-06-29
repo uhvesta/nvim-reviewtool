@@ -46,6 +46,14 @@ function M.add_comment()
   comments.add()
 end
 
+function M.toggle_comment()
+  comments.toggle_at_cursor()
+end
+
+function M.anchor_comment()
+  comments.anchor_invalid_at_cursor()
+end
+
 function M.mark_reviewed()
   session.mark_reviewed()
 end

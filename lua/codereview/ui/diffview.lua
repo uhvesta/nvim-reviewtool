@@ -125,6 +125,15 @@ local function apply_line_highlights(buf, map)
   end
 end
 
+local function configure_code_window(win)
+  vim.wo[win].wrap = true
+  vim.wo[win].linebreak = true
+  vim.wo[win].breakindent = true
+  vim.wo[win].signcolumn = "yes"
+  vim.wo[win].number = true
+  vim.wo[win].relativenumber = false
+end
+
 function M.open(session, file)
   local ft = ft_for(file.path)
   local old_path = file.old_path or file.path
@@ -144,30 +153,29 @@ function M.open(session, file)
   vim.b[new_buf].codereview_side = "new"
   vim.b[new_buf].codereview_file = file.path
 
+  local start_win = vim.api.nvim_get_current_win()
   local old_win = nil
   if file.status ~= "added" then
-    vim.cmd("rightbelow vertical new")
-    old_win = vim.api.nvim_get_current_win()
+    old_win = start_win
     vim.api.nvim_win_set_buf(old_win, old_buf)
     vim.wo[old_win].scrollbind = true
     vim.wo[old_win].cursorbind = true
-    vim.wo[old_win].wrap = false
-    vim.wo[old_win].signcolumn = "yes"
-    vim.wo[old_win].number = true
-    vim.wo[old_win].relativenumber = false
+    configure_code_window(old_win)
   end
 
-  vim.cmd("rightbelow vertical new")
-  local new_win = vim.api.nvim_get_current_win()
+  local new_win
+  if file.status == "added" then
+    new_win = start_win
+  else
+    vim.cmd("rightbelow vertical new")
+    new_win = vim.api.nvim_get_current_win()
+  end
   vim.api.nvim_win_set_buf(new_win, new_buf)
   vim.api.nvim_set_current_win(new_win)
 
   vim.wo[new_win].scrollbind = file.status ~= "added"
   vim.wo[new_win].cursorbind = file.status ~= "added"
-  vim.wo[new_win].wrap = false
-  vim.wo[new_win].signcolumn = "yes"
-  vim.wo[new_win].number = true
-  vim.wo[new_win].relativenumber = false
+  configure_code_window(new_win)
   if file.status ~= "added" then
     vim.cmd("syncbind")
   end
@@ -192,12 +200,18 @@ end
 
 function M.display_to_real(display_lnum)
   if not M.current then return nil end
+  display_lnum = tonumber(display_lnum)
+  if not display_lnum or display_lnum < 1 then return nil end
   return M.current.maps.new_display_to_real[display_lnum]
+    or (M.current.file.status == "added" and display_lnum or nil)
 end
 
 function M.real_to_display(real_lnum)
   if not M.current then return nil end
+  real_lnum = tonumber(real_lnum)
+  if not real_lnum or real_lnum < 1 then return nil end
   return M.current.maps.new_real_to_display[real_lnum]
+    or (M.current.file.status == "added" and real_lnum or nil)
 end
 
 return M
