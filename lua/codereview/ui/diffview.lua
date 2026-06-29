@@ -144,23 +144,37 @@ function M.open(session, file)
   vim.b[new_buf].codereview_side = "new"
   vim.b[new_buf].codereview_file = file.path
 
+  local old_win = nil
+  if file.status ~= "added" then
+    vim.cmd("rightbelow vertical new")
+    old_win = vim.api.nvim_get_current_win()
+    vim.api.nvim_win_set_buf(old_win, old_buf)
+    vim.wo[old_win].scrollbind = true
+    vim.wo[old_win].cursorbind = true
+    vim.wo[old_win].wrap = false
+    vim.wo[old_win].signcolumn = "yes"
+    vim.wo[old_win].number = true
+    vim.wo[old_win].relativenumber = false
+  end
+
   vim.cmd("rightbelow vertical new")
-  local old_win = vim.api.nvim_get_current_win()
-  vim.api.nvim_win_set_buf(old_win, old_buf)
-  vim.cmd("vertical new")
   local new_win = vim.api.nvim_get_current_win()
   vim.api.nvim_win_set_buf(new_win, new_buf)
   vim.api.nvim_set_current_win(new_win)
 
-  for _, win in ipairs({ old_win, new_win }) do
-    vim.wo[win].scrollbind = true
-    vim.wo[win].cursorbind = true
-    vim.wo[win].wrap = false
-    vim.wo[win].signcolumn = "yes"
+  vim.wo[new_win].scrollbind = file.status ~= "added"
+  vim.wo[new_win].cursorbind = file.status ~= "added"
+  vim.wo[new_win].wrap = false
+  vim.wo[new_win].signcolumn = "yes"
+  vim.wo[new_win].number = true
+  vim.wo[new_win].relativenumber = false
+  if file.status ~= "added" then
+    vim.cmd("syncbind")
   end
-  vim.cmd("syncbind")
 
-  apply_line_highlights(old_buf, aligned.old_hl)
+  if file.status ~= "added" then
+    apply_line_highlights(old_buf, aligned.old_hl)
+  end
   apply_line_highlights(new_buf, aligned.new_hl)
 
   M.current = {
