@@ -10,6 +10,7 @@ local defaults = {
     comment = "<leader>crc",
     toggle_comment = "<leader>crt",
     anchor_comment = "<leader>cra",
+    delete_comment = "<leader>crx",
     comments = "<leader>crC",
     dump = "<leader>crd",
     next = "<leader>crn",

@@ -40,10 +40,34 @@ local function create_name(src)
   return label .. " @ " .. os.date("%Y-%m-%d %H:%M")
 end
 
+local function hydrate_state(session)
+  M.state = {
+    session = session,
+    files = queries.get_files(session.id),
+    current_index = tonumber(session.current_file_index) or 1,
+  }
+  if M.state.current_index < 1 then M.state.current_index = 1 end
+  if M.state.current_index > #M.state.files then M.state.current_index = #M.state.files end
+  return M.state
+end
+
 function M.create(spec)
   source.resolve(spec, function(src)
     if #src.file_list == 0 then
       vim.notify("No changed files found", vim.log.levels.INFO)
+      return
+    end
+    local existing = queries.find_active_session({
+      source_type = src.source_type,
+      source_spec = src.source_spec,
+      repo_dir = src.repo_dir,
+      base_ref = src.base_ref,
+      target_ref = src.target_ref,
+    })
+    if existing then
+      hydrate_state(existing)
+      layout.open(M.state)
+      vim.notify("Resumed existing CodeReview session #" .. existing.id)
       return
     end
     local session = queries.create_session({
@@ -80,11 +104,7 @@ function M.resume(id)
       vim.notify("No CodeReview session " .. id, vim.log.levels.ERROR)
       return
     end
-    M.state = {
-      session = session,
-      files = queries.get_files(session.id),
-      current_index = tonumber(session.current_file_index) or 1,
-    }
+    hydrate_state(session)
     layout.open(M.state)
     return
   end
@@ -134,11 +154,16 @@ end
 
 function M.close()
   if not M.state then return end
-  comments.update_positions()
-  queries.close_session(M.state.session.id)
-  close_view()
-  M.state = nil
-  vim.notify("CodeReview session closed")
+  vim.ui.select({ "cancel", "close session" }, {
+    prompt = "Close this CodeReview session?",
+  }, function(choice)
+    if choice ~= "close session" then return end
+    comments.update_positions()
+    queries.close_session(M.state.session.id)
+    close_view()
+    M.state = nil
+    vim.notify("CodeReview session closed")
+  end)
 end
 
 return M

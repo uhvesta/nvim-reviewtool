@@ -54,6 +54,10 @@ function M.anchor_comment()
   comments.anchor_invalid_at_cursor()
 end
 
+function M.delete_comment()
+  comments.delete_picker()
+end
+
 function M.mark_reviewed()
   session.mark_reviewed()
 end

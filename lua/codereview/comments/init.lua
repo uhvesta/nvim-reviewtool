@@ -168,4 +168,34 @@ function M.anchor_invalid_at_cursor()
   end)
 end
 
+function M.delete_picker()
+  if not diffview.current then return end
+  local rows = queries.get_comments(diffview.current.session.id, diffview.current.file.path)
+  if #rows == 0 then
+    vim.notify("No CodeReview comments in current file", vim.log.levels.INFO)
+    return
+  end
+  vim.ui.select(rows, {
+    prompt = "Delete CodeReview comment",
+    format_item = function(comment)
+      return string.format("#%d line %d: %s", comment.id, comment.start_line, comment.comment_text:gsub("\n", " "):sub(1, 90))
+    end,
+  }, function(choice)
+    if not choice then return end
+    vim.ui.select({ "cancel", "delete comment" }, {
+      prompt = "Soft-delete comment #" .. choice.id .. "?",
+    }, function(confirm)
+      if confirm ~= "delete comment" then return end
+      queries.soft_delete_comment(choice.id)
+      undo.push(diffview.current.session.id, {
+        type = "delete",
+        comment_id = choice.id,
+        before = choice,
+      })
+      M.render_file_comments()
+      vim.notify("Deleted CodeReview comment #" .. choice.id .. " (undo with <leader>cru)")
+    end)
+  end)
+end
+
 return M

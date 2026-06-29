@@ -113,6 +113,22 @@ function M.list_sessions(filter)
   return normalize_rows(db.query("SELECT * FROM sessions" .. where .. " ORDER BY updated_at DESC"))
 end
 
+function M.find_active_session(match)
+  for _, session in ipairs(M.list_sessions({ status = "active" })) do
+    local ok = true
+    for k, v in pairs(match) do
+      if session[k] ~= v then
+        ok = false
+        break
+      end
+    end
+    if ok then
+      return session
+    end
+  end
+  return nil
+end
+
 function M.update_session(id, fields)
   if db.driver() == "json" then
     local row = json_find("sessions", function(s) return s.id == tonumber(id) end)

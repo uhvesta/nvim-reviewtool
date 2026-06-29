@@ -16,6 +16,7 @@ local subcommands = {
   comment = function() api().add_comment() end,
   comments = function() api().comments() end,
   anchor = function() api().anchor_comment() end,
+  delete = function() api().delete_comment() end,
   reviewed = function() api().mark_reviewed() end,
   dump = function(args)
     api().dump({ no_snippets = vim.tbl_contains(args.fargs, "--no-snippets") })
@@ -29,7 +30,7 @@ local subcommands = {
 vim.api.nvim_create_user_command("CodeReview", function(args)
   local cmd = args.fargs[1]
   if not cmd or cmd == "" then
-    vim.notify("Usage: CodeReview <new|resume|files|next|prev|comment|comments|reviewed|dump|summary|close|undo|redo>", vim.log.levels.INFO)
+    vim.notify("Usage: CodeReview <new|resume|files|next|prev|comment|comments|anchor|delete|reviewed|dump|summary|close|undo|redo>", vim.log.levels.INFO)
     return
   end
   local handler = subcommands[cmd]
